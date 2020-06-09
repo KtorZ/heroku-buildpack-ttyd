@@ -1,3 +1,6 @@
 #!/bin/sh
 
+ls /usr/include/libwebsockets.*
+ls /usr/include/json-c
+
 exit 0
