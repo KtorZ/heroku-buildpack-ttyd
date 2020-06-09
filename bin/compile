@@ -1,5 +1,7 @@
 #!/bin/sh
 
+BUILD_DIR=$1
+
 ls $BUILD_DIR/.apt/
 ls $BUILD_DIR/.apt/usr/include
 export JSON-C_INCLUDE_DIR=$BUILD_DIR/.apt/usr/include/json-c
