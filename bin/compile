@@ -5,16 +5,16 @@ export PATH=$BUILD_DIR:$PATH
 
 curl https://github.com/tsl0922/ttyd/releases/download/1.6.0/ttyd_linux.x86_64 --output ttyd
 chmod +x ttyd
-ttyd --help
+./ttyd --help
 
 curl https://download.docker.com/linux/static/stable/x86_64/docker-19.03.9.tgz | tar xz
 ls .
 mv docker docker_ && mv docker_/docker docker && rm -rf docker_
 chmod +x docker
 
-docker --help
+./docker --help
 
-docker build -t service:latest .
+./docker build -t service:latest .
 
 cat <<EOF > run.sh
 #!/bin/bash
