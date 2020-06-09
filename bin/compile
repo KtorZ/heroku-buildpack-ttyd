@@ -1,0 +1,30 @@
+#!/bin/sh
+
+sudo apt-get install build-essential cmake git libjson-c-dev libwebsockets-dev
+git clone https://github.com/tsl0922/ttyd.git
+cd ttyd && mkdir build && cd build
+cmake ..
+make && make install
+
+docker build -t service:latest .
+
+cat <<EOF > run.sh
+#!/bin/bash
+set -euo pipefail
+
+container=""
+
+function cleanup() {
+	docker rm -f "\${container}"
+}
+trap cleanup EXIT
+
+container=\$(docker run -d --entrypoint /bin/sh service:latest -c "sleep 3600")
+
+if [ -z "\${container}" ]; then
+	echo "Failed to obtain container ID"
+	exit 1
+fi
+
+docker exec -it "\${container}" bash
+EOF
