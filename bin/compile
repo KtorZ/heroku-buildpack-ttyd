@@ -1,10 +1,30 @@
 #!/bin/sh
 
+curl -s https://get.docker.io/ubuntu/ | sh
+
+exit 1
+
 BUILD_DIR=$1
-export PATH=$(pwd)/docker:$(pwd):$PATH
+CACHE_DIR=$2
+ENV_DIR=$3
+VENDOR_DIR=$BUILD_DIR/vendor
+
+mkdir -p $CACHE_DIR $VENDOR_DIR
+
+DOCKER_VERSION=`curl -s https://download.docker.com/linux/static/stable/x86_64/ | grep "\-ce" | grep -oP "[0-9]+\.[0-9]+\.[0-9]" | tail -n 1`
+LOCAL_DOCKER_TGZ=$CACHE_DIR/docker-$DOCKER_VERSION.tgz
+
+echo "-----> Using docker CLI $DOCKER_VERSION"
+[ -e $LOCAL_DOCKER_TGZ ] || curl -s https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}-ce.tgz -o $LOCAL_DOCKER_TGZ
+
+echo "-----> Installing binaries under $VENDOR_DIR"
+tar -zxf $LOCAL_DOCKER_TGZ -C $VENDOR_DIR docker/docker
+cp $LOCAL_COMPOSE $VENDOR_DIR/docker/docker-compose
+chmod 755 $VENDOR_DIR/docker/*
 
 wget https://github.com/tsl0922/ttyd/releases/download/1.6.0/ttyd_linux.x86_64 -O ttyd
 chmod +x ttyd
+
 
 curl https://download.docker.com/linux/static/stable/x86_64/docker-19.03.9.tgz | tar xz
 chmod +x docker/*
