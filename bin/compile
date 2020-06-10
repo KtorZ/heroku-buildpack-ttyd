@@ -1,40 +1,35 @@
 #!/bin/sh
 
-curl https://get.docker.io/ubuntu/ | sh
-
-exit 1
-
 BUILD_DIR=$1
 CACHE_DIR=$2
 ENV_DIR=$3
-VENDOR_DIR=$BUILD_DIR/vendor
+INSTALL_DIR=$BUILD_DIR/.local
 
-mkdir -p $CACHE_DIR $VENDOR_DIR
+export PATH=$INSTALL_DIR/bin:$PATH
+mkdir -p $CACHE_DIR $INSTALL_DIR/bin $INSTALL_DIR/lib $INSTALL_DIR/run
 
+echo "-----> Installing docker"
 DOCKER_VERSION=`curl -s https://download.docker.com/linux/static/stable/x86_64/ | grep "\-ce" | grep -oP "[0-9]+\.[0-9]+\.[0-9]" | tail -n 1`
-LOCAL_DOCKER_TGZ=$CACHE_DIR/docker-$DOCKER_VERSION.tgz
+[ -e $CACHE_DIR/docker.tgz ] || curl -s https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}-ce.tgz -o $CACHE_DIR/docker.tgz
+tar xzf $CACHE_DIR/docker.tgz
+mv $CACHE_DIR/docker/* $INSTALL_DIR/bin
+docker --version
+dockerd --version
 
-echo "-----> Using docker CLI $DOCKER_VERSION"
-[ -e $LOCAL_DOCKER_TGZ ] || curl -s https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}-ce.tgz -o $LOCAL_DOCKER_TGZ
+echo "-----> Starting docker daemon"
+mkdir -p $INSTALL_DIR/lib
+mkdir -p docker/run
+dockerd --data-root $INSTALL_DIR/lib --exec-root $INSTALL_DIR/run --pidfile $INSTALL_DIR/run/docker.pid --containerd $INSTALL_DIR/run/docker.sock
 
-echo "-----> Installing binaries under $VENDOR_DIR"
-tar -zxf $LOCAL_DOCKER_TGZ -C $VENDOR_DIR docker/docker
-cp $LOCAL_COMPOSE $VENDOR_DIR/docker/docker-compose
-chmod 755 $VENDOR_DIR/docker/*
+echo "-----> Installing ttyd"
+curl -s https://github.com/tsl0922/ttyd/releases/download/1.6.0/ttyd_linux.x86_64 -o $INSTALL_DIR/bin/ttyd
+chmod +x $INSTALL_DIR/ttyd
+ttyd --version
 
-wget https://github.com/tsl0922/ttyd/releases/download/1.6.0/ttyd_linux.x86_64 -O ttyd
-chmod +x ttyd
-
-
-curl https://download.docker.com/linux/static/stable/x86_64/docker-19.03.9.tgz | tar xz
-chmod +x docker/*
-
-dockerd
-
-exit 1
-
+echo "-----> Building app Dockerfile"
 cd $BUILD_DIR && docker build -t service:latest .
 
+echo "-----> Generating ttyd runner"
 cat <<EOF > run.sh
 #!/bin/bash
 set -euo pipefail
