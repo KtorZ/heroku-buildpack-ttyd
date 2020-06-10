@@ -7,10 +7,11 @@ wget https://github.com/tsl0922/ttyd/releases/download/1.6.0/ttyd_linux.x86_64 -
 chmod +x ttyd
 
 curl https://download.docker.com/linux/static/stable/x86_64/docker-19.03.9.tgz | tar xz
-mv docker docker_ && mv docker_/docker docker && rm -rf docker_
-chmod +x docker
+chmod +x docker/*
 
-cd $BUILD_DIR && docker build -t service:latest .
+docker/dockerd &
+
+cd $BUILD_DIR && docker/docker build -t service:latest .
 
 cat <<EOF > run.sh
 #!/bin/bash
@@ -19,16 +20,16 @@ set -euo pipefail
 container=""
 
 function cleanup() {
-	docker rm -f "\${container}"
+  docker/docker rm -f "\${container}"
 }
 trap cleanup EXIT
 
-container=\$(docker run -d --entrypoint /bin/sh service:latest -c "sleep 3600")
+container=\$(docker/docker run -d --entrypoint /bin/sh service:latest -c "sleep 3600")
 
 if [ -z "\${container}" ]; then
 	echo "Failed to obtain container ID"
 	exit 1
 fi
 
-docker exec -it "\${container}" bash
+docker/docker exec -it "\${container}" bash
 EOF
