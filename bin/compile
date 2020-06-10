@@ -9,10 +9,9 @@ chmod +x ttyd
 curl https://download.docker.com/linux/static/stable/x86_64/docker-19.03.9.tgz | tar xz
 chmod +x docker/*
 
-./docker/dockerd &
+echo $PATH
 
-./docker/docker --help
-docker --help
+./docker/dockerd &
 
 cd $BUILD_DIR && docker build -t service:latest .
 
