@@ -9,7 +9,9 @@ chmod +x ttyd
 curl https://download.docker.com/linux/static/stable/x86_64/docker-19.03.9.tgz | tar xz
 chmod +x docker/*
 
-dockerd &
+dockerd
+
+exit 1
 
 cd $BUILD_DIR && docker build -t service:latest .
 
