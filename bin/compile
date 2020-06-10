@@ -12,13 +12,11 @@ echo "-----> Installing docker"
 DOCKER_VERSION=`curl -s https://download.docker.com/linux/static/stable/x86_64/ | grep "\-ce" | grep -oP "[0-9]+\.[0-9]+\.[0-9]" | tail -n 1`
 [ -e $CACHE_DIR/docker.tgz ] || curl -s https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}-ce.tgz -o $CACHE_DIR/docker.tgz
 tar xzf $CACHE_DIR/docker.tgz
-mv $CACHE_DIR/docker/* $INSTALL_DIR/bin
+chmod +x docker/* && mv docker/* $INSTALL_DIR/bin
 docker --version
 dockerd --version
 
 echo "-----> Starting docker daemon"
-mkdir -p $INSTALL_DIR/lib
-mkdir -p docker/run
 dockerd --data-root $INSTALL_DIR/lib --exec-root $INSTALL_DIR/run --pidfile $INSTALL_DIR/run/docker.pid --containerd $INSTALL_DIR/run/docker.sock
 
 echo "-----> Installing ttyd"
